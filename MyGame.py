@@ -1,6 +1,7 @@
 import sys
 import pygame
 import random
+import time
 
 from pygame.locals import QUIT
 
@@ -35,6 +36,15 @@ class obj:
         
     def show(self):
         screen.blit(self.img, (self.x, self.y))
+
+# 충돌 판정
+def crash(a, b):
+    if (a.x-b.sx <= b.x) and (b.x <= a.x+a.sx):
+        if(a.y-b.sy <= b.y) and (b.y <= a.y+a.sy):
+            return True # 충돌함
+        else:
+            False # 충돌 X
+    else: False # 충돌 X
 
 ss = obj()
 ss.put_img("C:/python_game/img/ss.png")
@@ -118,7 +128,7 @@ while SB == 0:
     if space_go == True and k % 6 == 0:
         mm = obj()
         mm.put_img("C:/python_game/img/mm.png")
-        mm.change_size(40, 30)
+        mm.change_size(5, 15)
         mm.x = round(ss.x + (ss.sx-mm.sx)/2)
         mm.y = ss.y - mm.sy/2
         mm.move = 15
@@ -160,6 +170,36 @@ while SB == 0:
     for d in d_list:
         del a_list[d]
         
+    # 충돌된 적과 총알 제거
+    dm_list = []
+    da_list = []
+    for i in range(len(m_list)):
+        for j in range(len(a_list)):
+            m = m_list[i]
+            a = a_list[j]
+            if crash(a, m) == True:
+                dm_list.append(i)
+                da_list.append(j)
+    dm_list = list(set(dm_list)) # 중복 제거
+    da_list = list(set(da_list)) # 중복 제거
+    dm_list.reverse()
+    da_list.reverse()
+    try:
+        for dm in dm_list:
+            del m_list[dm]
+        for da in da_list:
+            del a_list[da]
+    except:
+        pass
+
+    for i in range(len(a_list)):
+        a = a_list[i]
+        if crash(ss, a) == True:
+            SB = 1
+            time.sleep(1)
+
+
+
 
     # 4-4. 그리기
     screen.fill(black)
