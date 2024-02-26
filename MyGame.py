@@ -2,6 +2,7 @@ import sys
 import pygame
 import random
 import time
+from datetime import datetime
 
 from pygame.locals import QUIT
 
@@ -65,7 +66,27 @@ a_list = []
 black = (0, 0, 0)
 k = 0
 
+game_over = 0
+kill = 0
+loss = 0
+
+# 4-0. 게임 시작 대기 화면
+SB = 0
+while SB == 0:
+    clock.tick(60)
+    for event in pygame.event.get():
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                SB = 1
+    screen.fill(black)
+    font = pygame.font.Font("C:\Windows\Fonts\BAUHS93.TTF", 20)
+    text = font.render("PRESS SPACEBAR TO START THE GAME", True, (255, 255, 255)) # True는 Anti aliasing 옵션 켜는 것, 글자가 매끄러워짐
+    screen.blit(text, (40, round(size[1]/2-50)))
+    pygame.display.flip()
+
+
 # 4. 메인 이벤트
+start_time = datetime.now()
 SB = 0
 while SB == 0:
 
@@ -105,6 +126,8 @@ while SB == 0:
                 space_go = False
 
     # 4-3. 입력, 시간에 따른 변화
+    now_time = datetime.now()
+    delta_time = round((now_time - start_time).total_seconds())
     
     # 방향키 (연속)이동
     if left_go == True:
@@ -136,7 +159,7 @@ while SB == 0:
     
     k += 1
 
-    # 총알 이동 및 지우기
+    # 총알 이동 및 (화면 이탈했을 때) 지우기
     d_list = []
     for i in range(len(m_list)):
         m = m_list[i]
@@ -158,7 +181,7 @@ while SB == 0:
         aa.move = 1
         a_list.append(aa)
 
-    # 적 이동 및 지우기
+    # 적 이동 및 (화면 이탈했을 때) 지우기
     d_list = []
     for i in range(len(a_list)):
         a = a_list[i]
@@ -169,6 +192,7 @@ while SB == 0:
     d_list.reverse()
     for d in d_list:
         del a_list[d]
+        loss += 1
         
     # 충돌된 적과 총알 제거
     dm_list = []
@@ -189,6 +213,7 @@ while SB == 0:
             del m_list[dm]
         for da in da_list:
             del a_list[da]
+            kill += 1
     except:
         pass
 
@@ -196,10 +221,7 @@ while SB == 0:
         a = a_list[i]
         if crash(ss, a) == True:
             SB = 1
-            time.sleep(1)
-
-
-
+            game_over = 1
 
     # 4-4. 그리기
     screen.fill(black)
@@ -208,9 +230,26 @@ while SB == 0:
         m.show()
     for a in a_list:
         a.show()
+
+    font = pygame.font.Font("C:\Windows\Fonts\BAUHS93.TTF", 20)
+    text_kill = font.render("killed : {}   loss : {}".format(kill, loss), True, (255, 255, 0)) # True는 Anti aliasing 옵션 켜는 것, 글자가 매끄러워짐
+    screen.blit(text_kill, (10, 5))
+
+    text_time = font.render("time : {}".format(delta_time), True, (255, 255, 255)) # True는 Anti aliasing 옵션 켜는 것, 글자가 매끄러워짐
+    screen.blit(text_time, (size[0]-100, 5))
     
     # 4-5. 업데이트
     pygame.display.flip()
 
 # 5. 게임종료
+while game_over == 1:
+    clock.tick(60)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            game_over = 0
+    # screen.fill((100, 100, 100))
+    font = pygame.font.Font("C:\Windows\Fonts\BAUHS93.TTF", 48)
+    text = font.render("GAME OVER", True, (255, 0, 0)) # True는 Anti aliasing 옵션 켜는 것, 글자가 매끄러워짐
+    screen.blit(text, (80, round(size[1]/2-50)))
+    pygame.display.flip() # 이 함수 없이는 화면에 어떤 변화도 나타나지 않으므로 꼭 추가하기
 pygame.quit()
